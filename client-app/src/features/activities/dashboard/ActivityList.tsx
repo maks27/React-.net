@@ -1,62 +1,48 @@
-import React, { SyntheticEvent } from "react";
-import { Button, Item, Label, Segment } from "semantic-ui-react";
-import { IActivity } from "../../../app/models/activity";
+import React, { useContext } from 'react';
+import { Item, Button, Label, Segment } from 'semantic-ui-react';
+import { observer } from 'mobx-react-lite';
+import ActivityStore from '../../../app/stores/activityStore';
 
-interface Iprops {
-  activities: IActivity[];
-  selectActivity: (id: string) => void;
-  deleteActivity: (event:SyntheticEvent<HTMLButtonElement>, id: string) => void;
-  submitting: boolean;
-  target: string
-
-}
-const ActivityList: React.FC<Iprops> = ({
-  activities,
-  selectActivity,
-  deleteActivity,
-  submitting,
-  target
-}) => {
+const ActivityList: React.FC = () => {
+  const activityStore = useContext(ActivityStore);
+  const {activitiesByDate, selectActivity, deleteActivity, submitting, target} = activityStore;
   return (
     <Segment clearing>
       <Item.Group divided>
-        {activities.map((value) => {
-          return (
-            <Item key={value.id}>
-              <Item.Content>
-                <Item.Header as="a">{value.title}</Item.Header>
-                <Item.Meta>{value.date}</Item.Meta>
-                <Item.Description>
-                  <div>{value.description}</div>
-                  <div>
-                    {value.venue},{value.city}
-                  </div>
-                </Item.Description>
-                <Item.Extra>
-                  <Button
-                    onClick={() => selectActivity(value.id)}
-                    floated="right"
-                    content="View"
-                    color="blue"
-                  ></Button>
-                  <Button
-                    name={value.id}
-                    loading={target === value.id && submitting} 
-                    onClick={(event) => {deleteActivity(event,value.id); console.log(target)}}
-                    floated="right"
-                    content="Delete"
-                    color="red"
-                  ></Button>
-
-                  <Label basic content={value.category}></Label>
-                </Item.Extra>
-              </Item.Content>
-            </Item>
-          );
-        })}
+        {activitiesByDate.map(activity => (
+          <Item key={activity.id}>
+            <Item.Content>
+              <Item.Header as='a'>{activity.title}</Item.Header>
+              <Item.Meta>{activity.date}</Item.Meta>
+              <Item.Description>
+                <div>{activity.description}</div>
+                <div>
+                  {activity.city}, {activity.venue}
+                </div>
+              </Item.Description>
+              <Item.Extra>
+                <Button
+                  onClick={() => selectActivity(activity.id)}
+                  floated='right'
+                  content='View'
+                  color='blue'
+                />
+                <Button
+                  name={activity.id}
+                  loading={target === activity.id && submitting}
+                  onClick={(e) => deleteActivity(e, activity.id)}
+                  floated='right'
+                  content='Delete'
+                  color='red'
+                />
+                <Label basic content={activity.category} />
+              </Item.Extra>
+            </Item.Content>
+          </Item>
+        ))}
       </Item.Group>
     </Segment>
   );
 };
 
-export default ActivityList;
+export default observer(ActivityList);
